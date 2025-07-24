@@ -135,8 +135,9 @@
         <!-- Lobby Section -->
         <div id="lobby-section" class="card">
             <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Modo de Juego</h2>
-            <div class="space-y-6">
+            <div class="space-y-4">
                  <button id="offline-game-btn" class="btn text-lg w-full">Jugar Offline (2 Jugadores)</button>
+                 <button id="instructions-btn" class="btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500">Instrucciones</button>
                 <div class="text-center text-gray-400">--- o ---</div>
                 <button id="create-game-btn" class="btn text-lg w-full">Crear Juego Online</button>
                 <div class="space-y-2">
@@ -203,6 +204,43 @@
             <button id="play-again-btn" class="btn text-lg">Volver al Menú</button>
         </div>
     </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="card text-left space-y-4 max-w-lg w-full max-h-full overflow-y-auto">
+            <h2 class="font-title text-2xl font-semibold text-center text-cyan-300">Instrucciones del Juego</h2>
+            <div>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2">Objetivo:</h3>
+                <p>Adivinar el código secreto de 4 dígitos de tu oponente antes de que él adivine el tuyo.</p>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2">Reglas:</h3>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>Cada jugador elige un código secreto de 4 dígitos.</li>
+                    <li>Los dígitos deben ser únicos (no se pueden repetir).</li>
+                    <li>Los jugadores se turnan para intentar adivinar el código del otro.</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2">Pistas:</h3>
+                <ul class="list-disc list-inside space-y-1">
+                    <li><span class="ok">OK:</span> Significa que un dígito es correcto y está en la posición correcta.</li>
+                    <li><span class="pica">Pica:</span> Significa que un dígito es correcto, pero está en la posición incorrecta.</li>
+                </ul>
+                <p class="mt-2 text-sm">Ejemplo: Si el código es 1234 y tu intento es 1743, obtendrás: <strong>1 OK</strong> (por el 1) y <strong>2 Picas</strong> (por el 4 y el 3).</p>
+            </div>
+             <div>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2">Modos de Juego:</h3>
+                <ul class="list-disc list-inside space-y-1">
+                    <li><strong>Offline:</strong> Dos jugadores en el mismo dispositivo.</li>
+                    <li><strong>Online:</strong> Un jugador crea una partida, comparte el ID, y el otro se une.</li>
+                </ul>
+            </div>
+            <div class="mt-6 flex justify-center">
+                <button id="close-instructions-btn" class="btn text-lg">Entendido</button>
+            </div>
+        </div>
+    </div>
     
     <div id="toast-container"></div>
 
@@ -212,8 +250,7 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Config ---
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCxK8U6dG82_p8J73Wc90jBlxMUZlbajVI",
   authDomain: "secretcode-d993d.firebaseapp.com",
@@ -225,21 +262,23 @@ const firebaseConfig = {
 };
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
 
+
         // --- App Initialization ---
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         // --- DOM Elements ---
-        const gameContainer = document.getElementById('game-container');
         const winnerModal = document.getElementById('winner-modal');
         const turnIndicator = document.getElementById('turn-indicator');
+        const instructionsModal = document.getElementById('instructions-modal');
         
         // --- Game State ---
         let userId = null;
         let gameId = null;
         let gameUnsubscribe = null;
         let offlineState = {};
+        let mySecretCode = null; // Stores the local player's code for online mode
 
         // --- UI Functions ---
         function showSection(section) {
@@ -401,6 +440,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-defau
             const myHistoryHtml = gameData[`player${playerNumber}History`].map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
             document.getElementById(`online-p${playerNumber}-board`).innerHTML = `
                 <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador ${playerNumber} (Tú)</h3>
+                <p class="text-center text-gray-400">Adivina el código del Jugador ${opponentNumber}</p>
+                <p class="text-center text-xs text-gray-500 -mt-3 mb-2">Tu código: <span class="font-bold text-yellow-300">${mySecretCode}</span></p>
                 <div class="flex gap-2">
                     <input type="text" id="guess-input" class="input-field" placeholder="Tu intento..." maxlength="4" ${!isMyTurn ? 'disabled' : ''}>
                     <button id="guess-btn" class="btn" ${!isMyTurn ? 'disabled' : ''}>Adivinar</button>
@@ -505,6 +546,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-defau
                 errorEl.textContent = 'El código debe tener 4 dígitos únicos.';
                 return;
             }
+            
+            mySecretCode = code; // Store code locally for display
 
             const gameRef = doc(db, `artifacts/${appId}/public/data/games`, gameId);
             const gameSnap = await getDoc(gameRef);
@@ -568,6 +611,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-defau
             if (gameUnsubscribe) gameUnsubscribe();
             gameId = null;
             offlineState = {};
+            mySecretCode = null;
             if(auth.currentUser) userId = auth.currentUser.uid;
             winnerModal.classList.add('hidden');
             turnIndicator.textContent = '';
@@ -582,6 +626,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-defau
         document.getElementById('join-game-btn').addEventListener('click', joinOnlineGame);
         document.getElementById('submit-code-btn').addEventListener('click', submitOnlineCode);
         document.getElementById('play-again-btn').addEventListener('click', resetToLobby);
+        document.getElementById('instructions-btn').addEventListener('click', () => instructionsModal.classList.remove('hidden'));
+        document.getElementById('close-instructions-btn').addEventListener('click', () => instructionsModal.classList.add('hidden'));
         document.getElementById('copy-id-btn').addEventListener('click', () => {
             const textToCopy = document.getElementById('game-id-display').textContent;
             const textArea = document.createElement('textarea');
