@@ -136,8 +136,8 @@
         <div id="lobby-section" class="card">
             <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Modo de Juego</h2>
             <div class="space-y-4">
-                 <button id="offline-game-btn" class="btn text-lg w-full">Jugar Offline (2 Jugadores)</button>
                  <button id="instructions-btn" class="btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500">Instrucciones</button>
+                 <button id="offline-game-btn" class="btn text-lg w-full">Jugar Offline (2 Jugadores)</button>
                 <div class="text-center text-gray-400">--- o ---</div>
                 <button id="create-game-btn" class="btn text-lg w-full">Crear Juego Online</button>
                 <div class="space-y-2">
@@ -250,7 +250,8 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Config ---
-       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCxK8U6dG82_p8J73Wc90jBlxMUZlbajVI",
   authDomain: "secretcode-d993d.firebaseapp.com",
@@ -260,8 +261,8 @@ const firebaseConfig = {
   appId: "1:481608572746:web:e32c01b93430ac800e6bb3",
   measurementId: "G-49KWCY0D9G"
 };
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
-
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
 
         // --- App Initialization ---
         const app = initializeApp(firebaseConfig);
