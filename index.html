@@ -223,7 +223,7 @@ const firebaseConfig = {
   appId: "1:481608572746:web:e32c01b93430ac800e6bb3",
   measurementId: "G-49KWCY0D9G"
 };
-
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
 
         // --- App Initialization ---
         const app = initializeApp(firebaseConfig);
