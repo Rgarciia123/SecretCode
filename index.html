@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Código Secreto Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glow-color: #00aaff;
+            --ok-color: #00ff87;
+            --pica-color: #ffdd00;
+            --error-color: #ff4d4d;
+            --bg-dark: #0a0a14;
+            --bg-light: #1a2035;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at center, var(--bg-light), var(--bg-dark) 80%);
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        .font-title { font-family: 'Orbitron', sans-serif; }
+
+        .card {
+            background-color: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.1), 0 0 30px rgba(0, 170, 255, 0.1);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-field {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid #374151;
+            color: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--glow-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--glow-color);
+            background: linear-gradient(45deg, #005f80, #00aaff);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 8px var(--glow-color), inset 0 0 8px rgba(0, 170, 255, 0.5);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow-color), inset 0 0 15px rgba(0, 170, 255, 0.5);
+        }
+        
+        .btn:disabled {
+            background: #374151;
+            border-color: #4b5563;
+            cursor: not-allowed;
+            box-shadow: none;
+            color: #9ca3af; text-shadow: none;
+        }
+
+        .history-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 1rem; background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 0.5rem; margin-bottom: 0.5rem;
+            border-left: 3px solid var(--glow-color);
+            animation: slideIn 0.4s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .pica { color: var(--pica-color); font-weight: bold; text-shadow: 0 0 5px var(--pica-color); }
+        .ok { color: var(--ok-color); font-weight: bold; text-shadow: 0 0 5px var(--ok-color); }
+        
+        .turn-active {
+            border-color: var(--glow-color);
+            box-shadow: 0 0 25px rgba(0, 170, 255, 0.3);
+            transform: scale(1.02);
+        }
+        
+        #turn-indicator { transition: all 0.5s ease; }
+        
+        .hidden { display: none !important; }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            background-color: #1f2937; color: white;
+            padding: 10px 20px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 100;
+            animation: toast-in 0.5s, toast-out 0.5s 2.5s;
+            opacity: 0;
+        }
+
+        @keyframes toast-in { from { bottom: -50px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+        @keyframes toast-out { from { bottom: 20px; opacity: 1; } to { bottom: -50px; opacity: 0; } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="w-full max-w-4xl mx-auto">
+        <h1 class="font-title text-5xl font-bold text-center mb-2 text-white" style="text-shadow: 0 0 10px var(--glow-color);">Código Secreto</h1>
+        <p id="turn-indicator" class="text-center text-xl text-cyan-300 mb-6 h-7 font-bold"></p>
+
+        <!-- Lobby Section -->
+        <div id="lobby-section" class="card">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Modo de Juego</h2>
+            <div class="space-y-6">
+                 <button id="offline-game-btn" class="btn text-lg w-full">Jugar Offline (2 Jugadores)</button>
+                <div class="text-center text-gray-400">--- o ---</div>
+                <button id="create-game-btn" class="btn text-lg w-full">Crear Juego Online</button>
+                <div class="space-y-2">
+                    <input type="text" id="join-game-id" class="input-field text-center" placeholder="Pega el ID del Juego aquí">
+                    <button id="join-game-btn" class="btn text-lg w-full">Unirse al Juego Online</button>
+                    <p id="lobby-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Offline Setup Section -->
+        <div id="offline-setup-section" class="card hidden">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Configuración Offline</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <label for="p1-offline-code" class="block font-medium text-lg">Código Secreto del Jugador 1</label>
+                    <input type="password" id="p1-offline-code" class="input-field font-mono" placeholder="4 dígitos únicos" maxlength="4">
+                    <p id="p1-offline-error" class="text-red-500 text-sm h-5"></p>
+                </div>
+                <div class="space-y-4">
+                    <label for="p2-offline-code" class="block font-medium text-lg">Código Secreto del Jugador 2</label>
+                    <input type="password" id="p2-offline-code" class="input-field font-mono" placeholder="4 dígitos únicos" maxlength="4">
+                    <p id="p2-offline-error" class="text-red-500 text-sm h-5"></p>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-center">
+                <button id="start-offline-game-btn" class="btn text-lg">Comenzar a Jugar</button>
+            </div>
+        </div>
+
+        <!-- Online Waiting Section -->
+        <div id="waiting-section" class="card text-center hidden">
+            <h2 class="font-title text-2xl font-semibold mb-4 text-cyan-300">Esperando Oponente</h2>
+            <p class="mb-4">Comparte este ID con tu amigo:</p>
+            <div class="flex items-center justify-center bg-gray-900 p-3 rounded-lg gap-4">
+                <p id="game-id-display" class="text-2xl font-bold text-yellow-300"></p>
+                <button id="copy-id-btn" class="btn !p-2 !text-sm">Copiar</button>
+            </div>
+        </div>
+
+        <!-- Online Setup Section -->
+        <div id="setup-section" class="card hidden">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Introduce tu Código Secreto</h2>
+            <div class="max-w-xs mx-auto space-y-4">
+                <input type="password" id="secret-code-input" class="input-field text-center" placeholder="4 dígitos únicos" maxlength="4">
+                <button id="submit-code-btn" class="btn text-lg w-full">Confirmar Código</button>
+                <p id="setup-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
+                <p id="setup-status" class="text-sm h-5 text-center text-yellow-300"></p>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div id="game-section" class="hidden">
+             <div class="grid md:grid-cols-2 gap-6" id="game-boards-container">
+                <!-- Boards will be rendered here -->
+             </div>
+        </div>
+    </div>
+
+    <!-- Winner Modal -->
+    <div id="winner-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="card text-center space-y-6 border-2" style="border-color: var(--ok-color); box-shadow: 0 0 20px var(--ok-color);">
+            <h2 id="winner-message" class="font-title text-3xl font-bold" style="color: var(--ok-color); text-shadow: 0 0 8px var(--ok-color);"></h2>
+            <button id="play-again-btn" class="btn text-lg">Volver al Menú</button>
+        </div>
+    </div>
+    
+    <div id="toast-container"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Config ---
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
+
+        // --- App Initialization ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- DOM Elements ---
+        const gameContainer = document.getElementById('game-container');
+        const winnerModal = document.getElementById('winner-modal');
+        const turnIndicator = document.getElementById('turn-indicator');
+        
+        // --- Game State ---
+        let userId = null;
+        let gameId = null;
+        let gameUnsubscribe = null;
+        let offlineState = {};
+
+        // --- UI Functions ---
+        function showSection(section) {
+            ['lobby-section', 'offline-setup-section', 'waiting-section', 'setup-section', 'game-section'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            if (section) document.getElementById(section).classList.remove('hidden');
+        }
+        
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // --- Game Logic (Shared) ---
+        function isValidCode(code) {
+            return /^\d{4}$/.test(code) && new Set(code.split('')).size === 4;
+        }
+        
+        function checkGuess(guess, secretCode) {
+            let oks = 0, picas = 0;
+            const secretDigits = secretCode.split(''), guessDigits = guess.split('');
+            const secretChecked = [!1,!1,!1,!1], guessChecked = [!1,!1,!1,!1];
+            for(let i=0;i<4;i++) guessDigits[i]===secretDigits[i]&&(oks++,secretChecked[i]=!0,guessChecked[i]=!0);
+            for(let i=0;i<4;i++){if(guessChecked[i])continue;for(let j=0;j<4;j++){if(secretChecked[j])continue;if(guessDigits[i]===secretDigits[j]){picas++,secretChecked[j]=!0;break}}}
+            return {picas, oks};
+        }
+
+        function showWinner(winnerNum) {
+            document.getElementById('winner-message').textContent = `¡JUGADOR ${winnerNum} HA GANADO!`;
+            winnerModal.classList.remove('hidden');
+        }
+
+        // --- OFFLINE MODE ---
+        function startOfflineSetup() {
+            showSection('offline-setup-section');
+        }
+
+        function startOfflineGame() {
+            const p1CodeInput = document.getElementById('p1-offline-code');
+            const p2CodeInput = document.getElementById('p2-offline-code');
+            const p1Error = document.getElementById('p1-offline-error');
+            const p2Error = document.getElementById('p2-offline-error');
+            
+            p1Error.textContent = '';
+            p2Error.textContent = '';
+            let valid = true;
+
+            if (!isValidCode(p1CodeInput.value)) {
+                p1Error.textContent = 'El código debe tener 4 dígitos únicos.';
+                valid = false;
+            }
+            if (!isValidCode(p2CodeInput.value)) {
+                p2Error.textContent = 'El código debe tener 4 dígitos únicos.';
+                valid = false;
+            }
+
+            if (valid) {
+                offlineState = {
+                    p1Code: p1CodeInput.value,
+                    p2Code: p2CodeInput.value,
+                    currentPlayer: 1,
+                    p1History: [],
+                    p2History: [],
+                };
+                renderOfflineGameBoard();
+                showSection('game-section');
+            }
+        }
+
+        function renderOfflineGameBoard() {
+            const container = document.getElementById('game-boards-container');
+            container.innerHTML = `
+                <div id="offline-p1-board" class="card space-y-4 transition-all duration-500"></div>
+                <div id="offline-p2-board" class="card space-y-4 transition-all duration-500"></div>
+            `;
+            updateOfflineTurnUI();
+        }
+        
+        function updateOfflineTurnUI() {
+            const { currentPlayer, p1History, p2History } = offlineState;
+            const isP1Turn = currentPlayer === 1;
+
+            const p1HistoryHtml = p1History.map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
+            const p2HistoryHtml = p2History.map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
+
+            document.getElementById('offline-p1-board').innerHTML = `
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador 1</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="offline-p1-guess" class="input-field" placeholder="Tu intento..." maxlength="4" ${!isP1Turn ? 'disabled' : ''}>
+                    <button id="offline-p1-guess-btn" class="btn" ${!isP1Turn ? 'disabled' : ''}>Adivinar</button>
+                </div>
+                <p id="offline-p1-guess-error" class="text-sm h-5" style="color: var(--error-color);"></p>
+                <div class="h-80 overflow-y-auto pr-2">${p1HistoryHtml}</div>
+            `;
+            document.getElementById('offline-p2-board').innerHTML = `
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador 2</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="offline-p2-guess" class="input-field" placeholder="Tu intento..." maxlength="4" ${isP1Turn ? 'disabled' : ''}>
+                    <button id="offline-p2-guess-btn" class="btn" ${isP1Turn ? 'disabled' : ''}>Adivinar</button>
+                </div>
+                <p id="offline-p2-guess-error" class="text-sm h-5" style="color: var(--error-color);"></p>
+                <div class="h-80 overflow-y-auto pr-2">${p2HistoryHtml}</div>
+            `;
+            
+            document.getElementById('offline-p1-guess-btn').addEventListener('click', () => handleOfflineGuess(1));
+            document.getElementById('offline-p2-guess-btn').addEventListener('click', () => handleOfflineGuess(2));
+            document.getElementById('offline-p1-guess').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('offline-p1-guess-btn').click(); });
+            document.getElementById('offline-p2-guess').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('offline-p2-guess-btn').click(); });
+
+            turnIndicator.textContent = `>>> TURNO DEL JUGADOR ${currentPlayer} <<<`;
+            document.getElementById('offline-p1-board').classList.toggle('turn-active', isP1Turn);
+            document.getElementById('offline-p1-board').classList.toggle('opacity-60', !isP1Turn);
+            document.getElementById('offline-p2-board').classList.toggle('turn-active', !isP1Turn);
+            document.getElementById('offline-p2-board').classList.toggle('opacity-60', isP1Turn);
+        }
+
+        function handleOfflineGuess(playerNum) {
+            const guessInput = document.getElementById(`offline-p${playerNum}-guess`);
+            const errorEl = document.getElementById(`offline-p${playerNum}-guess-error`);
+            const guess = guessInput.value;
+            errorEl.textContent = '';
+
+            if (!isValidCode(guess)) {
+                errorEl.textContent = 'Intento inválido. 4 dígitos únicos.';
+                return;
+            }
+
+            const secretCode = playerNum === 1 ? offlineState.p2Code : offlineState.p1Code;
+            const { picas, oks } = checkGuess(guess, secretCode);
+            
+            offlineState[`p${playerNum}History`].unshift({ guess, picas, oks });
+
+            if (oks === 4) {
+                showWinner(playerNum);
+                return;
+            }
+            
+            offlineState.currentPlayer = playerNum === 1 ? 2 : 1;
+            updateOfflineTurnUI();
+        }
+
+        // --- ONLINE MODE ---
+        function renderOnlineGameBoard(gameData) {
+            const playerNumber = gameData.player1Id === userId ? 1 : 2;
+            const opponentNumber = playerNumber === 1 ? 2 : 1;
+            const isMyTurn = gameData.currentPlayer === playerNumber;
+
+            const container = document.getElementById('game-boards-container');
+            container.innerHTML = `
+                <div id="online-p${playerNumber}-board" class="card space-y-4 transition-all duration-500"></div>
+                <div id="online-p${opponentNumber}-board" class="card space-y-4 transition-all duration-500"></div>
+            `;
+            
+            const myHistoryHtml = gameData[`player${playerNumber}History`].map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
+            document.getElementById(`online-p${playerNumber}-board`).innerHTML = `
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador ${playerNumber} (Tú)</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="guess-input" class="input-field" placeholder="Tu intento..." maxlength="4" ${!isMyTurn ? 'disabled' : ''}>
+                    <button id="guess-btn" class="btn" ${!isMyTurn ? 'disabled' : ''}>Adivinar</button>
+                </div>
+                <p id="guess-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
+                <div class="h-80 overflow-y-auto pr-2">${myHistoryHtml}</div>
+            `;
+
+            const opponentHistoryHtml = gameData[`player${opponentNumber}History`].map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
+            document.getElementById(`online-p${opponentNumber}-board`).innerHTML = `
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador ${opponentNumber}</h3>
+                 <p class="text-center text-gray-400">Adivinando tu código...</p>
+                 <div class="h-80 overflow-y-auto pr-2 mt-16">${opponentHistoryHtml}</div>
+            `;
+            
+            document.getElementById('guess-btn').addEventListener('click', handleOnlineGuess);
+            document.getElementById('guess-input').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('guess-btn').click(); });
+
+            turnIndicator.textContent = `>>> TURNO DEL JUGADOR ${gameData.currentPlayer} <<<`;
+            document.getElementById(`online-p${playerNumber}-board`).classList.toggle('turn-active', isMyTurn);
+            document.getElementById(`online-p${playerNumber}-board`).classList.toggle('opacity-60', !isMyTurn);
+            document.getElementById(`online-p${opponentNumber}-board`).classList.toggle('turn-active', !isMyTurn);
+            document.getElementById(`online-p${opponentNumber}-board`).classList.toggle('opacity-60', isMyTurn);
+        }
+
+        function renderOnline(gameData) {
+            if (!gameData) {
+                resetToLobby();
+                return;
+            }
+
+            const playerNumber = gameData.player1Id === userId ? 1 : 2;
+
+            switch (gameData.gameState) {
+                case 'waiting':
+                    document.getElementById('game-id-display').textContent = gameData.gameId;
+                    showSection('waiting-section');
+                    break;
+                case 'setup':
+                    showSection('setup-section');
+                    const myCode = gameData[`player${playerNumber}Code`];
+                    if (myCode) {
+                        document.getElementById('secret-code-input').disabled = true;
+                        document.getElementById('submit-code-btn').disabled = true;
+                        document.getElementById('setup-status').textContent = 'Esperando al oponente...';
+                    } else {
+                        document.getElementById('secret-code-input').disabled = false;
+                        document.getElementById('submit-code-btn').disabled = false;
+                        document.getElementById('setup-status').textContent = '';
+                    }
+                    break;
+                case 'p1turn':
+                case 'p2turn':
+                    showSection('game-section');
+                    renderOnlineGameBoard(gameData);
+                    break;
+                case 'p1won':
+                case 'p2won':
+                    showSection('game-section');
+                    renderOnlineGameBoard(gameData);
+                    const winner = gameData.gameState === 'p1won' ? 1 : 2;
+                    showWinner(winner);
+                    break;
+            }
+        }
+        
+        async function createOnlineGame() {
+            gameId = doc(collection(db, `artifacts/${appId}/public/data/games`)).id.substring(0, 6).toUpperCase();
+            const gameRef = doc(db, `artifacts/${appId}/public/data/games`, gameId);
+            const newGame = {
+                gameId: gameId, player1Id: userId, player2Id: null,
+                gameState: 'waiting', player1Code: null, player2Code: null,
+                currentPlayer: 1, player1History: [], player2History: [],
+                createdAt: new Date(),
+            };
+            await setDoc(gameRef, newGame);
+            listenToGame(gameId);
+        }
+
+        async function joinOnlineGame() {
+            const joinId = document.getElementById('join-game-id').value.toUpperCase();
+            if (!joinId) return;
+            
+            const gameRef = doc(db, `artifacts/${appId}/public/data/games`, joinId);
+            const gameSnap = await getDoc(gameRef);
+
+            if (gameSnap.exists() && gameSnap.data().gameState === 'waiting') {
+                await updateDoc(gameRef, { player2Id: userId, gameState: 'setup' });
+                gameId = joinId;
+                listenToGame(gameId);
+            } else {
+                document.getElementById('lobby-error').textContent = 'Juego no encontrado o ya iniciado.';
+            }
+        }
+        
+        async function submitOnlineCode() {
+            const code = document.getElementById('secret-code-input').value;
+            const errorEl = document.getElementById('setup-error');
+            errorEl.textContent = '';
+            
+            if (!isValidCode(code)) {
+                errorEl.textContent = 'El código debe tener 4 dígitos únicos.';
+                return;
+            }
+
+            const gameRef = doc(db, `artifacts/${appId}/public/data/games`, gameId);
+            const gameSnap = await getDoc(gameRef);
+            const gameData = gameSnap.data();
+            const playerNumber = gameData.player1Id === userId ? 1 : 2;
+            
+            const updatePayload = {};
+            updatePayload[`player${playerNumber}Code`] = code;
+            
+            const opponentNumber = playerNumber === 1 ? 2 : 1;
+            if (gameData[`player${opponentNumber}Code`]) {
+                updatePayload.gameState = 'p1turn';
+            }
+            
+            await updateDoc(gameRef, updatePayload);
+        }
+        
+        async function handleOnlineGuess() {
+            const guess = document.getElementById('guess-input').value;
+            const errorEl = document.getElementById('guess-error');
+            errorEl.textContent = '';
+
+            if (!isValidCode(guess)) {
+                errorEl.textContent = 'El intento debe tener 4 dígitos únicos.';
+                return;
+            }
+
+            const gameRef = doc(db, `artifacts/${appId}/public/data/games`, gameId);
+            const gameSnap = await getDoc(gameRef);
+            const gameData = gameSnap.data();
+
+            const playerNumber = gameData.currentPlayer;
+            const opponentNumber = playerNumber === 1 ? 2 : 1;
+            const secretCode = gameData[`player${opponentNumber}Code`];
+
+            const { picas, oks } = checkGuess(guess, secretCode);
+            
+            const newHistory = [...gameData[`player${playerNumber}History`], { guess, picas, oks }];
+            
+            const updatePayload = {};
+            updatePayload[`player${playerNumber}History`] = newHistory;
+            
+            if (oks === 4) {
+                updatePayload.gameState = `p${playerNumber}won`;
+            } else {
+                updatePayload.currentPlayer = opponentNumber;
+                updatePayload.gameState = `p${opponentNumber}turn`;
+            }
+            
+            await updateDoc(gameRef, updatePayload);
+        }
+
+        function listenToGame(id) {
+            if (gameUnsubscribe) gameUnsubscribe();
+            gameUnsubscribe = onSnapshot(doc(db, `artifacts/${appId}/public/data/games`, id), (doc) => {
+                renderOnline(doc.data());
+            });
+        }
+        
+        function resetToLobby() {
+            if (gameUnsubscribe) gameUnsubscribe();
+            gameId = null;
+            offlineState = {};
+            if(auth.currentUser) userId = auth.currentUser.uid;
+            winnerModal.classList.add('hidden');
+            turnIndicator.textContent = '';
+            document.getElementById('game-boards-container').innerHTML = '';
+            showSection('lobby-section');
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('offline-game-btn').addEventListener('click', startOfflineSetup);
+        document.getElementById('start-offline-game-btn').addEventListener('click', startOfflineGame);
+        document.getElementById('create-game-btn').addEventListener('click', createOnlineGame);
+        document.getElementById('join-game-btn').addEventListener('click', joinOnlineGame);
+        document.getElementById('submit-code-btn').addEventListener('click', submitOnlineCode);
+        document.getElementById('play-again-btn').addEventListener('click', resetToLobby);
+        document.getElementById('copy-id-btn').addEventListener('click', () => {
+            const textToCopy = document.getElementById('game-id-display').textContent;
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            textArea.style.position = 'fixed';
+            textArea.style.top = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('ID copiado al portapapeles');
+            } catch (err) {
+                showToast('No se pudo copiar el ID');
+            }
+            document.body.removeChild(textArea);
+        });
+
+        // --- Auth ---
+        async function initializeAuth() {
+            try {
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+            }
+        }
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                userId = user.uid;
+                resetToLobby();
+            }
+        });
+        
+        initializeAuth();
+
+    </script>
+</body>
+</html>
