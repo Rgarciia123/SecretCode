@@ -184,11 +184,11 @@
         <div id="online-lobby-section" class="card hidden">
             <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="onlineMode">Modo Online</h2>
             <div class="space-y-4">
-                <button id="create-game-btn" class="btn text-lg w-full" data-lang="createOnline">Crear Juego Online</button>
-                <div class="text-center text-gray-400">--- o ---</div>
+                <button id="create-game-btn" class="btn text-lg w-full" data-lang="createOnline">Crear Duelo 1v1</button>
+                <div class="pt-4 border-t border-gray-700"></div>
                 <div class="space-y-2">
                     <input type="text" id="join-game-id" class="input-field text-center" data-lang-placeholder="joinPlaceholder">
-                    <button id="join-game-btn" class="btn text-lg w-full" data-lang="joinOnline">Unirse al Juego Online</button>
+                    <button id="join-game-btn" class="btn text-lg w-full" data-lang="joinGame">Unirse a Juego</button>
                     <p id="lobby-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
                 </div>
                 <div class="pt-4 border-t border-gray-700">
@@ -234,8 +234,8 @@
 
         <!-- Online Waiting Section -->
         <div id="waiting-section" class="card text-center hidden">
-            <h2 class="font-title text-2xl font-semibold mb-4 text-cyan-300" data-lang="waitingTitle">Esperando Oponente</h2>
-            <p class="mb-4" data-lang="shareId">Comparte este ID con tu amigo:</p>
+            <h2 id="waiting-title" class="font-title text-2xl font-semibold mb-4 text-cyan-300" data-lang="waitingTitle">Esperando Oponente</h2>
+            <p class="mb-4" data-lang="shareId">Comparte este ID con tus amigos:</p>
             <div class="flex items-center justify-center bg-gray-900 p-3 rounded-lg gap-4">
                 <p id="game-id-display" class="text-2xl font-bold text-yellow-300"></p>
                 <button id="copy-id-btn" class="btn !p-2 !text-sm" data-lang="copy">Copiar</button>
@@ -250,7 +250,7 @@
                     <label for="online-name-input" class="block font-medium text-lg mb-2" data-lang="yourName">Tu Nombre</label>
                     <input type="text" id="online-name-input" class="input-field text-center" data-lang-placeholder="anonymousPlaceholder">
                 </div>
-                <div>
+                <div id="secret-code-container">
                     <label for="secret-code-input" class="block font-medium text-lg mb-2" data-lang="yourCode">Tu Código Secreto</label>
                     <input type="password" id="secret-code-input" class="input-field text-center" data-lang-placeholder="codeInputPlaceholder" maxlength="4">
                 </div>
@@ -319,10 +319,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Config ---
-       const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyCxK8U6dG82_p8J73Wc90jBlxMUZlbajVI",
   authDomain: "secretcode-d993d.firebaseapp.com",
   projectId: "secretcode-d993d",
@@ -331,6 +331,7 @@
   appId: "1:481608572746:web:e32c01b93430ac800e6bb3",
   measurementId: "G-49KWCY0D9G"
 };
+
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
 
         // --- App Initialization ---
@@ -353,6 +354,7 @@
         let singlePlayerState = {};
         let mySecretCode = null;
         let currentLanguage = 'es';
+        let currentOnlineGameType = null;
 
         // --- TRANSLATIONS ---
         const translations = {
@@ -367,8 +369,9 @@
                 instructions: "Instrucciones",
                 singlePlayer: "Un Jugador",
                 offline2p: "Dos Jugadores Offline",
-                createOnline: "Crear Juego Online",
-                joinOnline: "Unirse al Juego Online",
+                createOnline: "Crear Duelo 1v1",
+                createRace: "Crear Carrera",
+                joinGame: "Unirse a Juego",
                 joinPlaceholder: "Pega el ID del Juego aquí",
                 changeLanguage: "Cambiar Idioma",
                 // Single Player Setup
@@ -386,9 +389,12 @@
                 secretCode: "Código Secreto",
                 codeInputPlaceholder: "4 dígitos únicos",
                 startGame: "Comenzar a Jugar",
+                startGameRace: "Comenzar Carrera",
                 // Online
                 waitingTitle: "Esperando Oponente",
-                shareId: "Comparte este ID con tu amigo:",
+                waitingRaceTitle: "Lobby de Carrera",
+                playersInLobby: "Jugadores en el lobby:",
+                shareId: "Comparte este ID con tus amigos:",
                 copy: "Copiar",
                 onlineSetupTitle: "Configura tu Jugador",
                 yourName: "Tu Nombre",
@@ -404,6 +410,7 @@
                 yourCodeIs: "Tu código: {code}",
                 opponentIsGuessing: "Adivinando tu código...",
                 guessOpponentCode: "Adivina el código de {opponentName}",
+                raceGuessPrompt: "¡Adivina el código de la computadora!",
                 // Modals
                 backToMenu: "Volver al Menú",
                 instructionsTitle: "Instrucciones del Juego",
@@ -441,8 +448,9 @@
                 instructions: "Instructions",
                 singlePlayer: "Single Player",
                 offline2p: "Two Players Offline",
-                createOnline: "Create Online Game",
-                joinOnline: "Join Online Game",
+                createOnline: "Create 1v1 Duel",
+                createRace: "Create Race",
+                joinGame: "Join Game",
                 joinPlaceholder: "Paste Game ID here",
                 changeLanguage: "Change Language",
                 // Single Player Setup
@@ -460,9 +468,12 @@
                 secretCode: "Secret Code",
                 codeInputPlaceholder: "4 unique digits",
                 startGame: "Start Game",
+                startGameRace: "Start Race",
                 // Online
                 waitingTitle: "Waiting for Opponent",
-                shareId: "Share this ID with your friend:",
+                waitingRaceTitle: "Race Lobby",
+                playersInLobby: "Players in lobby:",
+                shareId: "Share this ID with your friends:",
                 copy: "Copy",
                 onlineSetupTitle: "Setup Your Player",
                 yourName: "Your Name",
@@ -478,6 +489,7 @@
                 yourCodeIs: "Your code: {code}",
                 opponentIsGuessing: "Guessing your code...",
                 guessOpponentCode: "Guess {opponentName}'s code",
+                raceGuessPrompt: "Guess the computer's code!",
                 // Modals
                 backToMenu: "Back to Menu",
                 instructionsTitle: "Game Instructions",
@@ -568,6 +580,15 @@
             winnerModal.classList.remove('hidden');
             exitGameBtn.classList.add('hidden');
         }
+        
+        function generateComputerCode() {
+            const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            for (let i = digits.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [digits[i], digits[j]] = [digits[j], digits[i]];
+            }
+            return digits.slice(0, 4).join('');
+        }
 
         // --- SINGLE PLAYER MODE ---
         window.startSinglePlayerGame = function(timeLimit) {
@@ -594,15 +615,6 @@
                     showLoser("timeUpMessage", details);
                 }
             }, 1000);
-        }
-
-        function generateComputerCode() {
-            const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            for (let i = digits.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [digits[i], digits[j]] = [digits[j], digits[i]];
-            }
-            return digits.slice(0, 4).join('');
         }
 
         function renderSinglePlayerBoard() {
