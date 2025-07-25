@@ -156,22 +156,43 @@
             </div>
         </div>
 
-        <!-- Lobby Section -->
-        <div id="lobby-section" class="card hidden">
+        <!-- Main Menu Section -->
+        <div id="main-menu-section" class="card hidden">
             <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="gameModeTitle">Modo de Juego</h2>
             <div class="space-y-4">
-                 <button id="instructions-btn" class="btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500" data-lang="instructions">Instrucciones</button>
-                 <button id="single-player-btn" class="btn text-lg w-full" data-lang="singlePlayer">Un Jugador</button>
-                 <button id="offline-game-btn" class="btn text-lg w-full" data-lang="offline2p">Dos Jugadores Offline</button>
-                <div class="text-center text-gray-400">--- o ---</div>
+                <button id="show-offline-menu-btn" class="btn text-lg w-full" data-lang="playOffline">Jugar Offline</button>
+                <button id="show-online-menu-btn" class="btn text-lg w-full" data-lang="playOnline">Jugar Online</button>
+                <div class="pt-4 border-t border-gray-700"></div>
+                <button id="instructions-btn" class="btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500" data-lang="instructions">Instrucciones</button>
+                <button id="back-to-lang-btn" class="px-3 py-1 text-xs rounded-full bg-purple-800 hover:bg-purple-700 border border-purple-600 transition-colors" data-lang="changeLanguage">Cambiar Idioma</button>
+            </div>
+        </div>
+
+        <!-- Offline Lobby Section -->
+        <div id="offline-lobby-section" class="card hidden">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="offlineMode">Modo Offline</h2>
+            <div class="space-y-4">
+                <button id="single-player-btn" class="btn text-lg w-full" data-lang="singlePlayer">Un Jugador</button>
+                <button id="offline-game-btn" class="btn text-lg w-full" data-lang="offline2p">Dos Jugadores Offline</button>
+                <div class="pt-4 border-t border-gray-700">
+                    <button class="back-to-main-menu-btn btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500" data-lang="back">Volver</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online Lobby Section -->
+        <div id="online-lobby-section" class="card hidden">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="onlineMode">Modo Online</h2>
+            <div class="space-y-4">
                 <button id="create-game-btn" class="btn text-lg w-full" data-lang="createOnline">Crear Juego Online</button>
+                <div class="text-center text-gray-400">--- o ---</div>
                 <div class="space-y-2">
                     <input type="text" id="join-game-id" class="input-field text-center" data-lang-placeholder="joinPlaceholder">
                     <button id="join-game-btn" class="btn text-lg w-full" data-lang="joinOnline">Unirse al Juego Online</button>
                     <p id="lobby-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
                 </div>
-                <div class="pt-4 border-t border-gray-700 text-center">
-                    <button id="back-to-lang-btn" class="px-3 py-1 text-xs rounded-full bg-purple-800 hover:bg-purple-700 border border-purple-600 transition-colors" data-lang="changeLanguage">Cambiar Idioma</button>
+                <div class="pt-4 border-t border-gray-700">
+                    <button class="back-to-main-menu-btn btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500" data-lang="back">Volver</button>
                 </div>
             </div>
         </div>
@@ -256,6 +277,14 @@
         </div>
     </div>
 
+    <!-- Opponent Left Modal -->
+    <div id="opponent-left-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="card text-center space-y-6 border-2" style="border-color: var(--pica-color); box-shadow: 0 0 20px var(--pica-color);">
+            <h2 class="font-title text-3xl font-bold" style="color: var(--pica-color); text-shadow: 0 0 8px var(--pica-color);" data-lang="opponentLeft">Tu oponente ha abandonado la partida.</h2>
+            <button id="opponent-left-ok-btn" class="btn text-lg" data-lang="backToMenu">Volver al Menú</button>
+        </div>
+    </div>
+
     <!-- Instructions Modal -->
     <div id="instructions-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="card text-left space-y-4 max-w-lg w-full max-h-full overflow-y-auto">
@@ -311,6 +340,7 @@
 
         // --- DOM Elements ---
         const winnerModal = document.getElementById('winner-modal');
+        const opponentLeftModal = document.getElementById('opponent-left-modal');
         const turnIndicator = document.getElementById('turn-indicator');
         const instructionsModal = document.getElementById('instructions-modal');
         const exitGameBtn = document.getElementById('exit-game-btn');
@@ -329,6 +359,11 @@
             es: {
                 // Lobby
                 gameModeTitle: "Modo de Juego",
+                playOffline: "Jugar Offline",
+                playOnline: "Jugar Online",
+                offlineMode: "Modo Offline",
+                onlineMode: "Modo Online",
+                back: "Volver",
                 instructions: "Instrucciones",
                 singlePlayer: "Un Jugador",
                 offline2p: "Dos Jugadores Offline",
@@ -382,6 +417,7 @@
                 modeOffline: "Dos Jugadores Offline: Dos jugadores en el mismo dispositivo.",
                 modeOnline: "Online: Un jugador crea una partida, comparte el ID, y el otro se une.",
                 gotIt: "Entendido",
+                opponentLeft: "Tu oponente ha abandonado la partida.",
                 // Messages
                 winnerMessage: "¡{winnerName} HA GANADO!",
                 timeUpMessage: "¡Se acabó el tiempo!",
@@ -397,6 +433,11 @@
             en: {
                 // Lobby
                 gameModeTitle: "Game Mode",
+                playOffline: "Play Offline",
+                playOnline: "Play Online",
+                offlineMode: "Offline Mode",
+                onlineMode: "Online Mode",
+                back: "Back",
                 instructions: "Instructions",
                 singlePlayer: "Single Player",
                 offline2p: "Two Players Offline",
@@ -450,6 +491,7 @@
                 modeOffline: "Two Players Offline: Two players on the same device.",
                 modeOnline: "Online: One player creates a game, shares the ID, and the other joins.",
                 gotIt: "Got It",
+                opponentLeft: "Your opponent has left the game.",
                 // Messages
                 winnerMessage: "{winnerName} WINS!",
                 timeUpMessage: "Time's Up!",
@@ -482,7 +524,7 @@
 
         // --- UI Functions ---
         function showSection(section) {
-            ['language-section', 'lobby-section', 'single-player-setup-section', 'offline-setup-section', 'waiting-section', 'setup-section', 'game-section'].forEach(id => {
+            ['language-section', 'main-menu-section', 'offline-lobby-section', 'online-lobby-section', 'single-player-setup-section', 'offline-setup-section', 'waiting-section', 'setup-section', 'game-section'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             if (section) document.getElementById(section).classList.remove('hidden');
@@ -778,6 +820,7 @@
             }
 
             const playerNumber = gameData.player1Id === userId ? 1 : 2;
+            const opponentNumber = playerNumber === 1 ? 2 : 1;
             exitGameBtn.classList.remove('hidden');
 
             switch (gameData.gameState) {
@@ -812,6 +855,14 @@
                     const winnerNum = gameData.gameState === 'p1won' ? 1 : 2;
                     const winnerName = gameData[`player${winnerNum}Name`];
                     showWinner(winnerName);
+                    break;
+                case `p${opponentNumber}left`:
+                    showSection('game-section');
+                    opponentLeftModal.classList.remove('hidden');
+                    if (gameUnsubscribe) gameUnsubscribe();
+                    break;
+                case `p${playerNumber}left`:
+                    resetToLobby();
                     break;
             }
         }
@@ -929,21 +980,47 @@
             if(auth.currentUser) userId = auth.currentUser.uid;
             
             winnerModal.classList.add('hidden');
+            opponentLeftModal.classList.add('hidden');
             exitGameBtn.classList.add('hidden');
             turnIndicator.textContent = '';
             document.getElementById('game-boards-container').innerHTML = '';
             document.getElementById('winner-message').style.color = 'var(--ok-color)'; // Reset color
-            showSection('lobby-section');
+            showSection('main-menu-section');
+        }
+
+        async function handleExitGame() {
+            if (gameId) { // Online game
+                const gameRef = doc(db, `artifacts/${appId}/public/data/games`, gameId);
+                try {
+                    const gameSnap = await getDoc(gameRef);
+                    if (gameSnap.exists()) {
+                        const gameData = gameSnap.data();
+                        const playerNumber = gameData.player1Id === userId ? 1 : 2;
+                        if (gameData.gameState.includes('turn') || gameData.gameState === 'setup' || gameData.gameState === 'waiting') {
+                            await updateDoc(gameRef, { gameState: `p${playerNumber}left` });
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error updating game state on exit:", e);
+                }
+            }
+            resetToLobby();
         }
 
         // --- Event Listeners ---
         document.getElementById('lang-en-btn').addEventListener('click', () => {
             setLanguage('en');
-            showSection('lobby-section');
+            showSection('main-menu-section');
         });
         document.getElementById('lang-es-btn').addEventListener('click', () => {
             setLanguage('es');
-            showSection('lobby-section');
+            showSection('main-menu-section');
+        });
+
+        document.getElementById('show-offline-menu-btn').addEventListener('click', () => showSection('offline-lobby-section'));
+        document.getElementById('show-online-menu-btn').addEventListener('click', () => showSection('online-lobby-section'));
+        document.querySelectorAll('.back-to-main-menu-btn').forEach(btn => {
+            btn.addEventListener('click', () => showSection('main-menu-section'));
         });
 
         document.getElementById('single-player-btn').addEventListener('click', () => {
@@ -956,9 +1033,10 @@
         document.getElementById('join-game-btn').addEventListener('click', joinOnlineGame);
         document.getElementById('submit-code-btn').addEventListener('click', submitOnlineCode);
         document.getElementById('play-again-btn').addEventListener('click', resetToLobby);
+        document.getElementById('opponent-left-ok-btn').addEventListener('click', resetToLobby);
         document.getElementById('instructions-btn').addEventListener('click', () => instructionsModal.classList.remove('hidden'));
         document.getElementById('close-instructions-btn').addEventListener('click', () => instructionsModal.classList.add('hidden'));
-        exitGameBtn.addEventListener('click', resetToLobby);
+        exitGameBtn.addEventListener('click', handleExitGame);
         document.getElementById('back-to-lang-btn').addEventListener('click', () => showSection('language-section'));
         document.getElementById('copy-id-btn').addEventListener('click', () => {
             const textToCopy = document.getElementById('game-id-display').textContent;
