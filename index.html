@@ -124,66 +124,113 @@
 
         @keyframes toast-in { from { bottom: -50px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
         @keyframes toast-out { from { bottom: 20px; opacity: 1; } to { bottom: -50px; opacity: 0; } }
+        
+        .exit-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+            background: linear-gradient(45deg, #800000, #ff4d4d);
+            border-color: var(--error-color);
+            box-shadow: 0 0 8px var(--error-color), inset 0 0 8px rgba(255, 77, 77, 0.5);
+        }
+        .exit-btn:hover {
+            box-shadow: 0 0 15px var(--error-color), inset 0 0 15px rgba(255, 77, 77, 0.5);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
+
+    <button id="exit-game-btn" class="btn exit-btn hidden" data-lang="exitGame">Salir de Partida</button>
 
     <div id="game-container" class="w-full max-w-4xl mx-auto">
         <h1 class="font-title text-5xl font-bold text-center mb-2 text-white" style="text-shadow: 0 0 10px var(--glow-color);">Código Secreto</h1>
         <p id="turn-indicator" class="text-center text-xl text-cyan-300 mb-6 h-7 font-bold"></p>
 
+        <!-- Language Selection -->
+        <div id="language-section" class="card">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Select Language / Selecciona Idioma</h2>
+            <div class="flex justify-center gap-4">
+                <button id="lang-en-btn" class="btn text-lg">English</button>
+                <button id="lang-es-btn" class="btn text-lg">Español</button>
+            </div>
+        </div>
+
         <!-- Lobby Section -->
-        <div id="lobby-section" class="card">
-            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Modo de Juego</h2>
+        <div id="lobby-section" class="card hidden">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="gameModeTitle">Modo de Juego</h2>
             <div class="space-y-4">
-                 <button id="instructions-btn" class="btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500">Instrucciones</button>
-                 <button id="offline-game-btn" class="btn text-lg w-full">Jugar Offline (2 Jugadores)</button>
+                 <button id="instructions-btn" class="btn text-lg w-full !bg-gray-600 hover:!bg-gray-700 !border-gray-500" data-lang="instructions">Instrucciones</button>
+                 <button id="single-player-btn" class="btn text-lg w-full" data-lang="singlePlayer">Un Jugador</button>
+                 <button id="offline-game-btn" class="btn text-lg w-full" data-lang="offline2p">Dos Jugadores Offline</button>
                 <div class="text-center text-gray-400">--- o ---</div>
-                <button id="create-game-btn" class="btn text-lg w-full">Crear Juego Online</button>
+                <button id="create-game-btn" class="btn text-lg w-full" data-lang="createOnline">Crear Juego Online</button>
                 <div class="space-y-2">
-                    <input type="text" id="join-game-id" class="input-field text-center" placeholder="Pega el ID del Juego aquí">
-                    <button id="join-game-btn" class="btn text-lg w-full">Unirse al Juego Online</button>
+                    <input type="text" id="join-game-id" class="input-field text-center" data-lang-placeholder="joinPlaceholder">
+                    <button id="join-game-btn" class="btn text-lg w-full" data-lang="joinOnline">Unirse al Juego Online</button>
                     <p id="lobby-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Single Player Setup Section -->
+        <div id="single-player-setup-section" class="card hidden">
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="singlePlayerTitle">Modo Un Jugador</h2>
+            <p class="text-center mb-6" data-lang="timeLimitPrompt">Selecciona el límite de tiempo para adivinar el código.</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button class="btn text-lg" onclick="startSinglePlayerGame(180)" data-lang="timeNormal">3 Minutos (Normal)</button>
+                <button class="btn text-lg" onclick="startSinglePlayerGame(300)" data-lang="timeEasy">5 Minutos (Fácil)</button>
+                <button class="btn text-lg" onclick="startSinglePlayerGame(600)" data-lang="timeVeryEasy">10 Minutos (Muy Fácil)</button>
             </div>
         </div>
         
         <!-- Offline Setup Section -->
         <div id="offline-setup-section" class="card hidden">
-            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Configuración Offline</h2>
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="offlineSetupTitle">Configuración Offline</h2>
             <div class="grid md:grid-cols-2 gap-8">
                 <div class="space-y-4">
-                    <label for="p1-offline-code" class="block font-medium text-lg">Código Secreto del Jugador 1</label>
-                    <input type="password" id="p1-offline-code" class="input-field font-mono" placeholder="4 dígitos únicos" maxlength="4">
+                    <label for="p1-offline-name" class="block font-medium text-lg" data-lang="p1Name">Nombre Jugador 1</label>
+                    <input type="text" id="p1-offline-name" class="input-field" data-lang-placeholder="p1Placeholder">
+                    <label for="p1-offline-code" class="block font-medium text-lg mt-4" data-lang="secretCode">Código Secreto</label>
+                    <input type="password" id="p1-offline-code" class="input-field font-mono" data-lang-placeholder="codeInputPlaceholder" maxlength="4">
                     <p id="p1-offline-error" class="text-red-500 text-sm h-5"></p>
                 </div>
                 <div class="space-y-4">
-                    <label for="p2-offline-code" class="block font-medium text-lg">Código Secreto del Jugador 2</label>
-                    <input type="password" id="p2-offline-code" class="input-field font-mono" placeholder="4 dígitos únicos" maxlength="4">
+                    <label for="p2-offline-name" class="block font-medium text-lg" data-lang="p2Name">Nombre Jugador 2</label>
+                    <input type="text" id="p2-offline-name" class="input-field" data-lang-placeholder="p2Placeholder">
+                    <label for="p2-offline-code" class="block font-medium text-lg mt-4" data-lang="secretCode">Código Secreto</label>
+                    <input type="password" id="p2-offline-code" class="input-field font-mono" data-lang-placeholder="codeInputPlaceholder" maxlength="4">
                     <p id="p2-offline-error" class="text-red-500 text-sm h-5"></p>
                 </div>
             </div>
             <div class="mt-8 flex justify-center">
-                <button id="start-offline-game-btn" class="btn text-lg">Comenzar a Jugar</button>
+                <button id="start-offline-game-btn" class="btn text-lg" data-lang="startGame">Comenzar a Jugar</button>
             </div>
         </div>
 
         <!-- Online Waiting Section -->
         <div id="waiting-section" class="card text-center hidden">
-            <h2 class="font-title text-2xl font-semibold mb-4 text-cyan-300">Esperando Oponente</h2>
-            <p class="mb-4">Comparte este ID con tu amigo:</p>
+            <h2 class="font-title text-2xl font-semibold mb-4 text-cyan-300" data-lang="waitingTitle">Esperando Oponente</h2>
+            <p class="mb-4" data-lang="shareId">Comparte este ID con tu amigo:</p>
             <div class="flex items-center justify-center bg-gray-900 p-3 rounded-lg gap-4">
                 <p id="game-id-display" class="text-2xl font-bold text-yellow-300"></p>
-                <button id="copy-id-btn" class="btn !p-2 !text-sm">Copiar</button>
+                <button id="copy-id-btn" class="btn !p-2 !text-sm" data-lang="copy">Copiar</button>
             </div>
         </div>
 
         <!-- Online Setup Section -->
         <div id="setup-section" class="card hidden">
-            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300">Introduce tu Código Secreto</h2>
+            <h2 class="font-title text-2xl font-semibold text-center mb-6 text-cyan-300" data-lang="onlineSetupTitle">Configura tu Jugador</h2>
             <div class="max-w-xs mx-auto space-y-4">
-                <input type="password" id="secret-code-input" class="input-field text-center" placeholder="4 dígitos únicos" maxlength="4">
-                <button id="submit-code-btn" class="btn text-lg w-full">Confirmar Código</button>
+                <div>
+                    <label for="online-name-input" class="block font-medium text-lg mb-2" data-lang="yourName">Tu Nombre</label>
+                    <input type="text" id="online-name-input" class="input-field text-center" data-lang-placeholder="anonymousPlaceholder">
+                </div>
+                <div>
+                    <label for="secret-code-input" class="block font-medium text-lg mb-2" data-lang="yourCode">Tu Código Secreto</label>
+                    <input type="password" id="secret-code-input" class="input-field text-center" data-lang-placeholder="codeInputPlaceholder" maxlength="4">
+                </div>
+                <button id="submit-code-btn" class="btn text-lg w-full" data-lang="confirm">Confirmar</button>
                 <p id="setup-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
                 <p id="setup-status" class="text-sm h-5 text-center text-yellow-300"></p>
             </div>
@@ -201,43 +248,36 @@
     <div id="winner-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center z-50">
         <div class="card text-center space-y-6 border-2" style="border-color: var(--ok-color); box-shadow: 0 0 20px var(--ok-color);">
             <h2 id="winner-message" class="font-title text-3xl font-bold" style="color: var(--ok-color); text-shadow: 0 0 8px var(--ok-color);"></h2>
-            <button id="play-again-btn" class="btn text-lg">Volver al Menú</button>
+            <p id="winner-details" class="text-lg"></p>
+            <button id="play-again-btn" class="btn text-lg" data-lang="backToMenu">Volver al Menú</button>
         </div>
     </div>
 
     <!-- Instructions Modal -->
     <div id="instructions-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="card text-left space-y-4 max-w-lg w-full max-h-full overflow-y-auto">
-            <h2 class="font-title text-2xl font-semibold text-center text-cyan-300">Instrucciones del Juego</h2>
+            <h2 class="font-title text-2xl font-semibold text-center text-cyan-300" data-lang="instructionsTitle">Instrucciones del Juego</h2>
             <div>
-                <h3 class="font-bold text-lg text-cyan-400 mb-2">Objetivo:</h3>
-                <p>Adivinar el código secreto de 4 dígitos de tu oponente antes de que él adivine el tuyo.</p>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2" data-lang="objectiveTitle">Objetivo:</h3>
+                <p data-lang="objectiveText">Adivinar el código secreto de 4 dígitos de tu oponente (o de la computadora) antes de que se acabe el tiempo o te ganen.</p>
             </div>
             <div>
-                <h3 class="font-bold text-lg text-cyan-400 mb-2">Reglas:</h3>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2" data-lang="cluesTitle">Pistas:</h3>
                 <ul class="list-disc list-inside space-y-1">
-                    <li>Cada jugador elige un código secreto de 4 dígitos.</li>
-                    <li>Los dígitos deben ser únicos (no se pueden repetir).</li>
-                    <li>Los jugadores se turnan para intentar adivinar el código del otro.</li>
+                    <li data-lang="clueOK"><span class="ok">OK:</span> Significa que un dígito es correcto y está en la posición correcta.</li>
+                    <li data-lang="cluePica"><span class="pica">Pica:</span> Significa que un dígito es correcto, pero está en la posición incorrecta.</li>
                 </ul>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg text-cyan-400 mb-2">Pistas:</h3>
-                <ul class="list-disc list-inside space-y-1">
-                    <li><span class="ok">OK:</span> Significa que un dígito es correcto y está en la posición correcta.</li>
-                    <li><span class="pica">Pica:</span> Significa que un dígito es correcto, pero está en la posición incorrecta.</li>
-                </ul>
-                <p class="mt-2 text-sm">Ejemplo: Si el código es 1234 y tu intento es 1743, obtendrás: <strong>1 OK</strong> (por el 1) y <strong>2 Picas</strong> (por el 4 y el 3).</p>
             </div>
              <div>
-                <h3 class="font-bold text-lg text-cyan-400 mb-2">Modos de Juego:</h3>
+                <h3 class="font-bold text-lg text-cyan-400 mb-2" data-lang="modesTitle">Modos de Juego:</h3>
                 <ul class="list-disc list-inside space-y-1">
-                    <li><strong>Offline:</strong> Dos jugadores en el mismo dispositivo.</li>
-                    <li><strong>Online:</strong> Un jugador crea una partida, comparte el ID, y el otro se une.</li>
+                    <li data-lang="modeSingle"><strong>Un Jugador:</strong> Juegas contra la computadora con un límite de tiempo.</li>
+                    <li data-lang="modeOffline"><strong>Dos Jugadores Offline:</strong> Dos jugadores en el mismo dispositivo.</li>
+                    <li data-lang="modeOnline"><strong>Online:</strong> Un jugador crea una partida, comparte el ID, y el otro se une.</li>
                 </ul>
             </div>
             <div class="mt-6 flex justify-center">
-                <button id="close-instructions-btn" class="btn text-lg">Entendido</button>
+                <button id="close-instructions-btn" class="btn text-lg" data-lang="gotIt">Entendido</button>
             </div>
         </div>
     </div>
@@ -250,9 +290,7 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Config ---
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyCxK8U6dG82_p8J73Wc90jBlxMUZlbajVI",
   authDomain: "secretcode-d993d.firebaseapp.com",
   projectId: "secretcode-d993d",
@@ -261,7 +299,6 @@ const firebaseConfig = {
   appId: "1:481608572746:web:e32c01b93430ac800e6bb3",
   measurementId: "G-49KWCY0D9G"
 };
-        
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'codigo-secreto-default';
 
         // --- App Initialization ---
@@ -273,23 +310,181 @@ const firebaseConfig = {
         const winnerModal = document.getElementById('winner-modal');
         const turnIndicator = document.getElementById('turn-indicator');
         const instructionsModal = document.getElementById('instructions-modal');
+        const exitGameBtn = document.getElementById('exit-game-btn');
         
         // --- Game State ---
         let userId = null;
         let gameId = null;
         let gameUnsubscribe = null;
         let offlineState = {};
-        let mySecretCode = null; // Stores the local player's code for online mode
+        let singlePlayerState = {};
+        let mySecretCode = null;
+        let currentLanguage = 'es';
+
+        // --- TRANSLATIONS ---
+        const translations = {
+            es: {
+                // Lobby
+                gameModeTitle: "Modo de Juego",
+                instructions: "Instrucciones",
+                singlePlayer: "Un Jugador",
+                offline2p: "Dos Jugadores Offline",
+                createOnline: "Crear Juego Online",
+                joinOnline: "Unirse al Juego Online",
+                joinPlaceholder: "Pega el ID del Juego aquí",
+                // Single Player Setup
+                singlePlayerTitle: "Modo Un Jugador",
+                timeLimitPrompt: "Selecciona el límite de tiempo para adivinar el código.",
+                timeVeryEasy: "10 Minutos (Muy Fácil)",
+                timeEasy: "5 Minutos (Fácil)",
+                timeNormal: "3 Minutos (Normal)",
+                // Offline Setup
+                offlineSetupTitle: "Configuración Offline",
+                p1Name: "Nombre Jugador 1",
+                p2Name: "Nombre Jugador 2",
+                p1Placeholder: "Jugador 1",
+                p2Placeholder: "Jugador 2",
+                secretCode: "Código Secreto",
+                codeInputPlaceholder: "4 dígitos únicos",
+                startGame: "Comenzar a Jugar",
+                // Online
+                waitingTitle: "Esperando Oponente",
+                shareId: "Comparte este ID con tu amigo:",
+                copy: "Copiar",
+                onlineSetupTitle: "Configura tu Jugador",
+                yourName: "Tu Nombre",
+                anonymousPlaceholder: "Jugador Anónimo",
+                yourCode: "Tu Código Secreto",
+                confirm: "Confirmar",
+                // In-Game
+                exitGame: "Salir de Partida",
+                turnIndicator: ">>> TURNO DE {playerName} <<<",
+                timerIndicator: "Tiempo Restante: {time}",
+                guessInputPlaceholder: "Tu intento...",
+                guessButton: "Adivinar",
+                yourCodeIs: "Tu código: {code}",
+                opponentIsGuessing: "Adivinando tu código...",
+                guessOpponentCode: "Adivina el código de {opponentName}",
+                // Modals
+                backToMenu: "Volver al Menú",
+                instructionsTitle: "Instrucciones del Juego",
+                objectiveTitle: "Objetivo:",
+                objectiveText: "Adivinar el código secreto de 4 dígitos de tu oponente (o de la computadora) antes de que se acabe el tiempo o te ganen.",
+                cluesTitle: "Pistas:",
+                clueOK: "OK: Significa que un dígito es correcto y está en la posición correcta.",
+                cluePica: "Pica: Significa que un dígito es correcto, pero está en la posición incorrecta.",
+                modesTitle: "Modos de Juego:",
+                modeSingle: "Un Jugador: Juegas contra la computadora con un límite de tiempo.",
+                modeOffline: "Dos Jugadores Offline: Dos jugadores en el mismo dispositivo.",
+                modeOnline: "Online: Un jugador crea una partida, comparte el ID, y el otro se une.",
+                gotIt: "Entendido",
+                // Messages
+                winnerMessage: "¡{winnerName} HA GANADO!",
+                timeUpMessage: "¡Se acabó el tiempo!",
+                codeWas: "El código era: {code}",
+                youWon: "¡HAS GANADO!",
+                invalidCode: "El código debe tener 4 dígitos únicos.",
+                invalidGuess: "Intento inválido. 4 dígitos únicos.",
+                gameNotFound: "Juego no encontrado o ya iniciado.",
+                idCopied: "ID copiado al portapapeles",
+                copyFailed: "No se pudo copiar el ID",
+                waitingForOpponent: "Esperando al oponente..."
+            },
+            en: {
+                // Lobby
+                gameModeTitle: "Game Mode",
+                instructions: "Instructions",
+                singlePlayer: "Single Player",
+                offline2p: "Two Players Offline",
+                createOnline: "Create Online Game",
+                joinOnline: "Join Online Game",
+                joinPlaceholder: "Paste Game ID here",
+                // Single Player Setup
+                singlePlayerTitle: "Single Player Mode",
+                timeLimitPrompt: "Select the time limit to guess the code.",
+                timeVeryEasy: "10 Minutes (Very Easy)",
+                timeEasy: "5 Minutes (Easy)",
+                timeNormal: "3 Minutes (Normal)",
+                // Offline Setup
+                offlineSetupTitle: "Offline Setup",
+                p1Name: "Player 1 Name",
+                p2Name: "Player 2 Name",
+                p1Placeholder: "Player 1",
+                p2Placeholder: "Player 2",
+                secretCode: "Secret Code",
+                codeInputPlaceholder: "4 unique digits",
+                startGame: "Start Game",
+                // Online
+                waitingTitle: "Waiting for Opponent",
+                shareId: "Share this ID with your friend:",
+                copy: "Copy",
+                onlineSetupTitle: "Setup Your Player",
+                yourName: "Your Name",
+                anonymousPlaceholder: "Anonymous Player",
+                yourCode: "Your Secret Code",
+                confirm: "Confirm",
+                // In-Game
+                exitGame: "Exit Game",
+                turnIndicator: ">>> {playerName}'S TURN <<<",
+                timerIndicator: "Time Left: {time}",
+                guessInputPlaceholder: "Your guess...",
+                guessButton: "Guess",
+                yourCodeIs: "Your code: {code}",
+                opponentIsGuessing: "Guessing your code...",
+                guessOpponentCode: "Guess {opponentName}'s code",
+                // Modals
+                backToMenu: "Back to Menu",
+                instructionsTitle: "Game Instructions",
+                objectiveTitle: "Objective:",
+                objectiveText: "Guess your opponent's (or the computer's) 4-digit secret code before time runs out or they guess yours.",
+                cluesTitle: "Clues:",
+                clueOK: "OK: Means a digit is correct and in the correct position.",
+                cluePica: "Pica: Means a digit is correct but in the wrong position.",
+                modesTitle: "Game Modes:",
+                modeSingle: "Single Player: Play against the computer with a time limit.",
+                modeOffline: "Two Players Offline: Two players on the same device.",
+                modeOnline: "Online: One player creates a game, shares the ID, and the other joins.",
+                gotIt: "Got It",
+                // Messages
+                winnerMessage: "{winnerName} WINS!",
+                timeUpMessage: "Time's Up!",
+                codeWas: "The code was: {code}",
+                youWon: "YOU WON!",
+                invalidCode: "Code must be 4 unique digits.",
+                invalidGuess: "Invalid guess. 4 unique digits.",
+                gameNotFound: "Game not found or already started.",
+                idCopied: "ID copied to clipboard",
+                copyFailed: "Could not copy ID",
+                waitingForOpponent: "Waiting for opponent..."
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.dataset.lang;
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+                const key = el.dataset.langPlaceholder;
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+        }
 
         // --- UI Functions ---
         function showSection(section) {
-            ['lobby-section', 'offline-setup-section', 'waiting-section', 'setup-section', 'game-section'].forEach(id => {
+            ['language-section', 'lobby-section', 'single-player-setup-section', 'offline-setup-section', 'waiting-section', 'setup-section', 'game-section'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             if (section) document.getElementById(section).classList.remove('hidden');
         }
         
-        function showToast(message) {
+        function showToast(messageKey) {
+            const message = translations[currentLanguage][messageKey];
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -312,17 +507,116 @@ const firebaseConfig = {
             return {picas, oks};
         }
 
-        function showWinner(winnerNum) {
-            document.getElementById('winner-message').textContent = `¡JUGADOR ${winnerNum} HA GANADO!`;
+        function showWinner(winnerName, details = "") {
+            document.getElementById('winner-message').textContent = translations[currentLanguage].winnerMessage.replace('{winnerName}', winnerName);
+            document.getElementById('winner-details').textContent = details;
             winnerModal.classList.remove('hidden');
+            exitGameBtn.classList.add('hidden');
         }
+        
+        function showLoser(messageKey, details = "") {
+            document.getElementById('winner-message').textContent = translations[currentLanguage][messageKey];
+            document.getElementById('winner-message').style.color = 'var(--error-color)';
+            document.getElementById('winner-details').textContent = details;
+            winnerModal.classList.remove('hidden');
+            exitGameBtn.classList.add('hidden');
+        }
+
+        // --- SINGLE PLAYER MODE ---
+        window.startSinglePlayerGame = function(timeLimit) {
+            singlePlayerState = {
+                secretCode: generateComputerCode(),
+                timeLeft: timeLimit,
+                history: [],
+                timerId: null
+            };
+            
+            renderSinglePlayerBoard();
+            showSection('game-section');
+            exitGameBtn.classList.remove('hidden');
+            
+            singlePlayerState.timerId = setInterval(() => {
+                singlePlayerState.timeLeft--;
+                const minutes = Math.floor(singlePlayerState.timeLeft / 60).toString().padStart(2, '0');
+                const seconds = (singlePlayerState.timeLeft % 60).toString().padStart(2, '0');
+                turnIndicator.textContent = translations[currentLanguage].timerIndicator.replace('{time}', `${minutes}:${seconds}`);
+
+                if (singlePlayerState.timeLeft <= 0) {
+                    clearInterval(singlePlayerState.timerId);
+                    const details = translations[currentLanguage].codeWas.replace('{code}', singlePlayerState.secretCode);
+                    showLoser("timeUpMessage", details);
+                }
+            }, 1000);
+        }
+
+        function generateComputerCode() {
+            const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            for (let i = digits.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [digits[i], digits[j]] = [digits[j], digits[i]];
+            }
+            return digits.slice(0, 4).join('');
+        }
+
+        function renderSinglePlayerBoard() {
+            const container = document.getElementById('game-boards-container');
+            container.innerHTML = `
+                <div class="md:col-span-2 max-w-md mx-auto w-full">
+                    <div id="single-player-board" class="card space-y-4"></div>
+                </div>
+            `;
+            updateSinglePlayerUI();
+        }
+
+        function updateSinglePlayerUI() {
+            const historyHtml = singlePlayerState.history.map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
+            document.getElementById('single-player-board').innerHTML = `
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300" data-lang="guessTheCode">Adivina el Código</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="single-player-guess" class="input-field" placeholder="${translations[currentLanguage].guessInputPlaceholder}" maxlength="4">
+                    <button id="single-player-guess-btn" class="btn">${translations[currentLanguage].guessButton}</button>
+                </div>
+                <p id="single-player-guess-error" class="text-sm h-5" style="color: var(--error-color);"></p>
+                <div class="h-80 overflow-y-auto pr-2">${historyHtml}</div>
+            `;
+            document.getElementById('single-player-guess-btn').addEventListener('click', handleSinglePlayerGuess);
+            document.getElementById('single-player-guess').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('single-player-guess-btn').click(); });
+        }
+
+        function handleSinglePlayerGuess() {
+            const guessInput = document.getElementById('single-player-guess');
+            const errorEl = document.getElementById('single-player-guess-error');
+            const guess = guessInput.value;
+            errorEl.textContent = '';
+
+            if (!isValidCode(guess)) {
+                errorEl.textContent = translations[currentLanguage].invalidGuess;
+                return;
+            }
+
+            const { picas, oks } = checkGuess(guess, singlePlayerState.secretCode);
+            singlePlayerState.history.unshift({ guess, picas, oks });
+
+            if (oks === 4) {
+                clearInterval(singlePlayerState.timerId);
+                showWinner(translations[currentLanguage].youWon);
+                return;
+            }
+            
+            guessInput.value = '';
+            updateSinglePlayerUI();
+        }
+
 
         // --- OFFLINE MODE ---
         function startOfflineSetup() {
             showSection('offline-setup-section');
+            exitGameBtn.classList.remove('hidden');
         }
 
         function startOfflineGame() {
+            const p1NameInput = document.getElementById('p1-offline-name');
+            const p2NameInput = document.getElementById('p2-offline-name');
             const p1CodeInput = document.getElementById('p1-offline-code');
             const p2CodeInput = document.getElementById('p2-offline-code');
             const p1Error = document.getElementById('p1-offline-error');
@@ -333,16 +627,18 @@ const firebaseConfig = {
             let valid = true;
 
             if (!isValidCode(p1CodeInput.value)) {
-                p1Error.textContent = 'El código debe tener 4 dígitos únicos.';
+                p1Error.textContent = translations[currentLanguage].invalidCode;
                 valid = false;
             }
             if (!isValidCode(p2CodeInput.value)) {
-                p2Error.textContent = 'El código debe tener 4 dígitos únicos.';
+                p2Error.textContent = translations[currentLanguage].invalidCode;
                 valid = false;
             }
 
             if (valid) {
                 offlineState = {
+                    p1Name: p1NameInput.value || translations[currentLanguage].p1Placeholder,
+                    p2Name: p2NameInput.value || translations[currentLanguage].p2Placeholder,
                     p1Code: p1CodeInput.value,
                     p2Code: p2CodeInput.value,
                     currentPlayer: 1,
@@ -364,26 +660,26 @@ const firebaseConfig = {
         }
         
         function updateOfflineTurnUI() {
-            const { currentPlayer, p1History, p2History } = offlineState;
+            const { currentPlayer, p1History, p2History, p1Name, p2Name } = offlineState;
             const isP1Turn = currentPlayer === 1;
 
             const p1HistoryHtml = p1History.map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
             const p2HistoryHtml = p2History.map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
 
             document.getElementById('offline-p1-board').innerHTML = `
-                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador 1</h3>
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">${p1Name}</h3>
                 <div class="flex gap-2">
-                    <input type="text" id="offline-p1-guess" class="input-field" placeholder="Tu intento..." maxlength="4" ${!isP1Turn ? 'disabled' : ''}>
-                    <button id="offline-p1-guess-btn" class="btn" ${!isP1Turn ? 'disabled' : ''}>Adivinar</button>
+                    <input type="text" id="offline-p1-guess" class="input-field" placeholder="${translations[currentLanguage].guessInputPlaceholder}" maxlength="4" ${!isP1Turn ? 'disabled' : ''}>
+                    <button id="offline-p1-guess-btn" class="btn" ${!isP1Turn ? 'disabled' : ''}>${translations[currentLanguage].guessButton}</button>
                 </div>
                 <p id="offline-p1-guess-error" class="text-sm h-5" style="color: var(--error-color);"></p>
                 <div class="h-80 overflow-y-auto pr-2">${p1HistoryHtml}</div>
             `;
             document.getElementById('offline-p2-board').innerHTML = `
-                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador 2</h3>
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">${p2Name}</h3>
                 <div class="flex gap-2">
-                    <input type="text" id="offline-p2-guess" class="input-field" placeholder="Tu intento..." maxlength="4" ${isP1Turn ? 'disabled' : ''}>
-                    <button id="offline-p2-guess-btn" class="btn" ${isP1Turn ? 'disabled' : ''}>Adivinar</button>
+                    <input type="text" id="offline-p2-guess" class="input-field" placeholder="${translations[currentLanguage].guessInputPlaceholder}" maxlength="4" ${isP1Turn ? 'disabled' : ''}>
+                    <button id="offline-p2-guess-btn" class="btn" ${isP1Turn ? 'disabled' : ''}>${translations[currentLanguage].guessButton}</button>
                 </div>
                 <p id="offline-p2-guess-error" class="text-sm h-5" style="color: var(--error-color);"></p>
                 <div class="h-80 overflow-y-auto pr-2">${p2HistoryHtml}</div>
@@ -394,7 +690,7 @@ const firebaseConfig = {
             document.getElementById('offline-p1-guess').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('offline-p1-guess-btn').click(); });
             document.getElementById('offline-p2-guess').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('offline-p2-guess-btn').click(); });
 
-            turnIndicator.textContent = `>>> TURNO DEL JUGADOR ${currentPlayer} <<<`;
+            turnIndicator.textContent = translations[currentLanguage].turnIndicator.replace('{playerName}', currentPlayer === 1 ? p1Name : p2Name);
             document.getElementById('offline-p1-board').classList.toggle('turn-active', isP1Turn);
             document.getElementById('offline-p1-board').classList.toggle('opacity-60', !isP1Turn);
             document.getElementById('offline-p2-board').classList.toggle('turn-active', !isP1Turn);
@@ -408,7 +704,7 @@ const firebaseConfig = {
             errorEl.textContent = '';
 
             if (!isValidCode(guess)) {
-                errorEl.textContent = 'Intento inválido. 4 dígitos únicos.';
+                errorEl.textContent = translations[currentLanguage].invalidGuess;
                 return;
             }
 
@@ -418,7 +714,7 @@ const firebaseConfig = {
             offlineState[`p${playerNum}History`].unshift({ guess, picas, oks });
 
             if (oks === 4) {
-                showWinner(playerNum);
+                showWinner(playerNum === 1 ? offlineState.p1Name : offlineState.p2Name);
                 return;
             }
             
@@ -431,6 +727,8 @@ const firebaseConfig = {
             const playerNumber = gameData.player1Id === userId ? 1 : 2;
             const opponentNumber = playerNumber === 1 ? 2 : 1;
             const isMyTurn = gameData.currentPlayer === playerNumber;
+            const myName = gameData[`player${playerNumber}Name`];
+            const opponentName = gameData[`player${opponentNumber}Name`];
 
             const container = document.getElementById('game-boards-container');
             container.innerHTML = `
@@ -440,12 +738,12 @@ const firebaseConfig = {
             
             const myHistoryHtml = gameData[`player${playerNumber}History`].map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
             document.getElementById(`online-p${playerNumber}-board`).innerHTML = `
-                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador ${playerNumber} (Tú)</h3>
-                <p class="text-center text-gray-400">Adivina el código del Jugador ${opponentNumber}</p>
-                <p class="text-center text-xs text-gray-500 -mt-3 mb-2">Tu código: <span class="font-bold text-yellow-300">${mySecretCode}</span></p>
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">${myName} (Tú)</h3>
+                <p class="text-center text-gray-400">${translations[currentLanguage].guessOpponentCode.replace('{opponentName}', opponentName)}</p>
+                <p class="text-center text-xs text-gray-500 -mt-3 mb-2">${translations[currentLanguage].yourCodeIs.replace('{code}', mySecretCode)}</p>
                 <div class="flex gap-2">
-                    <input type="text" id="guess-input" class="input-field" placeholder="Tu intento..." maxlength="4" ${!isMyTurn ? 'disabled' : ''}>
-                    <button id="guess-btn" class="btn" ${!isMyTurn ? 'disabled' : ''}>Adivinar</button>
+                    <input type="text" id="guess-input" class="input-field" placeholder="${translations[currentLanguage].guessInputPlaceholder}" maxlength="4" ${!isMyTurn ? 'disabled' : ''}>
+                    <button id="guess-btn" class="btn" ${!isMyTurn ? 'disabled' : ''}>${translations[currentLanguage].guessButton}</button>
                 </div>
                 <p id="guess-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
                 <div class="h-80 overflow-y-auto pr-2">${myHistoryHtml}</div>
@@ -453,15 +751,15 @@ const firebaseConfig = {
 
             const opponentHistoryHtml = gameData[`player${opponentNumber}History`].map(h => `<div class="history-item"><span>${h.guess}</span><div class="flex gap-4"><span class="pica">${h.picas} Pica</span><span class="ok">${h.oks} OK</span></div></div>`).join('');
             document.getElementById(`online-p${opponentNumber}-board`).innerHTML = `
-                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">Jugador ${opponentNumber}</h3>
-                 <p class="text-center text-gray-400">Adivinando tu código...</p>
+                <h3 class="font-title text-xl font-semibold text-center text-cyan-300">${opponentName}</h3>
+                 <p class="text-center text-gray-400">${translations[currentLanguage].opponentIsGuessing}</p>
                  <div class="h-80 overflow-y-auto pr-2 mt-16">${opponentHistoryHtml}</div>
             `;
             
             document.getElementById('guess-btn').addEventListener('click', handleOnlineGuess);
             document.getElementById('guess-input').addEventListener('keyup', e => { if (e.key === 'Enter') document.getElementById('guess-btn').click(); });
 
-            turnIndicator.textContent = `>>> TURNO DEL JUGADOR ${gameData.currentPlayer} <<<`;
+            turnIndicator.textContent = translations[currentLanguage].turnIndicator.replace('{playerName}', gameData.currentPlayer === playerNumber ? myName : opponentName);
             document.getElementById(`online-p${playerNumber}-board`).classList.toggle('turn-active', isMyTurn);
             document.getElementById(`online-p${playerNumber}-board`).classList.toggle('opacity-60', !isMyTurn);
             document.getElementById(`online-p${opponentNumber}-board`).classList.toggle('turn-active', !isMyTurn);
@@ -475,6 +773,7 @@ const firebaseConfig = {
             }
 
             const playerNumber = gameData.player1Id === userId ? 1 : 2;
+            exitGameBtn.classList.remove('hidden');
 
             switch (gameData.gameState) {
                 case 'waiting':
@@ -485,10 +784,12 @@ const firebaseConfig = {
                     showSection('setup-section');
                     const myCode = gameData[`player${playerNumber}Code`];
                     if (myCode) {
+                        document.getElementById('online-name-input').disabled = true;
                         document.getElementById('secret-code-input').disabled = true;
                         document.getElementById('submit-code-btn').disabled = true;
-                        document.getElementById('setup-status').textContent = 'Esperando al oponente...';
+                        document.getElementById('setup-status').textContent = translations[currentLanguage].waitingForOpponent;
                     } else {
+                        document.getElementById('online-name-input').disabled = false;
                         document.getElementById('secret-code-input').disabled = false;
                         document.getElementById('submit-code-btn').disabled = false;
                         document.getElementById('setup-status').textContent = '';
@@ -503,8 +804,9 @@ const firebaseConfig = {
                 case 'p2won':
                     showSection('game-section');
                     renderOnlineGameBoard(gameData);
-                    const winner = gameData.gameState === 'p1won' ? 1 : 2;
-                    showWinner(winner);
+                    const winnerNum = gameData.gameState === 'p1won' ? 1 : 2;
+                    const winnerName = gameData[`player${winnerNum}Name`];
+                    showWinner(winnerName);
                     break;
             }
         }
@@ -514,6 +816,7 @@ const firebaseConfig = {
             const gameRef = doc(db, `artifacts/${appId}/public/data/games`, gameId);
             const newGame = {
                 gameId: gameId, player1Id: userId, player2Id: null,
+                player1Name: "Player 1", player2Name: "Player 2",
                 gameState: 'waiting', player1Code: null, player2Code: null,
                 currentPlayer: 1, player1History: [], player2History: [],
                 createdAt: new Date(),
@@ -534,17 +837,18 @@ const firebaseConfig = {
                 gameId = joinId;
                 listenToGame(gameId);
             } else {
-                document.getElementById('lobby-error').textContent = 'Juego no encontrado o ya iniciado.';
+                document.getElementById('lobby-error').textContent = translations[currentLanguage].gameNotFound;
             }
         }
         
         async function submitOnlineCode() {
+            const name = document.getElementById('online-name-input').value;
             const code = document.getElementById('secret-code-input').value;
             const errorEl = document.getElementById('setup-error');
             errorEl.textContent = '';
             
             if (!isValidCode(code)) {
-                errorEl.textContent = 'El código debe tener 4 dígitos únicos.';
+                errorEl.textContent = translations[currentLanguage].invalidCode;
                 return;
             }
             
@@ -556,6 +860,7 @@ const firebaseConfig = {
             const playerNumber = gameData.player1Id === userId ? 1 : 2;
             
             const updatePayload = {};
+            updatePayload[`player${playerNumber}Name`] = name || `${translations[currentLanguage].p1Placeholder.split(' ')[0]} ${playerNumber}`;
             updatePayload[`player${playerNumber}Code`] = code;
             
             const opponentNumber = playerNumber === 1 ? 2 : 1;
@@ -572,7 +877,7 @@ const firebaseConfig = {
             errorEl.textContent = '';
 
             if (!isValidCode(guess)) {
-                errorEl.textContent = 'El intento debe tener 4 dígitos únicos.';
+                errorEl.textContent = translations[currentLanguage].invalidGuess;
                 return;
             }
 
@@ -610,17 +915,36 @@ const firebaseConfig = {
         
         function resetToLobby() {
             if (gameUnsubscribe) gameUnsubscribe();
+            if (singlePlayerState.timerId) clearInterval(singlePlayerState.timerId);
+            
             gameId = null;
             offlineState = {};
+            singlePlayerState = {};
             mySecretCode = null;
             if(auth.currentUser) userId = auth.currentUser.uid;
+            
             winnerModal.classList.add('hidden');
+            exitGameBtn.classList.add('hidden');
             turnIndicator.textContent = '';
             document.getElementById('game-boards-container').innerHTML = '';
+            document.getElementById('winner-message').style.color = 'var(--ok-color)'; // Reset color
             showSection('lobby-section');
         }
 
         // --- Event Listeners ---
+        document.getElementById('lang-en-btn').addEventListener('click', () => {
+            setLanguage('en');
+            showSection('lobby-section');
+        });
+        document.getElementById('lang-es-btn').addEventListener('click', () => {
+            setLanguage('es');
+            showSection('lobby-section');
+        });
+
+        document.getElementById('single-player-btn').addEventListener('click', () => {
+            showSection('single-player-setup-section');
+            exitGameBtn.classList.remove('hidden');
+        });
         document.getElementById('offline-game-btn').addEventListener('click', startOfflineSetup);
         document.getElementById('start-offline-game-btn').addEventListener('click', startOfflineGame);
         document.getElementById('create-game-btn').addEventListener('click', createOnlineGame);
@@ -629,6 +953,7 @@ const firebaseConfig = {
         document.getElementById('play-again-btn').addEventListener('click', resetToLobby);
         document.getElementById('instructions-btn').addEventListener('click', () => instructionsModal.classList.remove('hidden'));
         document.getElementById('close-instructions-btn').addEventListener('click', () => instructionsModal.classList.add('hidden'));
+        exitGameBtn.addEventListener('click', resetToLobby);
         document.getElementById('copy-id-btn').addEventListener('click', () => {
             const textToCopy = document.getElementById('game-id-display').textContent;
             const textArea = document.createElement('textarea');
@@ -639,9 +964,9 @@ const firebaseConfig = {
             textArea.select();
             try {
                 document.execCommand('copy');
-                showToast('ID copiado al portapapeles');
+                showToast('idCopied');
             } catch (err) {
-                showToast('No se pudo copiar el ID');
+                showToast('copyFailed');
             }
             document.body.removeChild(textArea);
         });
@@ -663,7 +988,7 @@ const firebaseConfig = {
         onAuthStateChanged(auth, user => {
             if (user) {
                 userId = user.uid;
-                resetToLobby();
+                showSection('language-section');
             }
         });
         
