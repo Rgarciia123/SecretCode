@@ -170,6 +170,9 @@
                     <button id="join-game-btn" class="btn text-lg w-full" data-lang="joinOnline">Unirse al Juego Online</button>
                     <p id="lobby-error" class="text-sm h-5 text-center" style="color: var(--error-color);"></p>
                 </div>
+                <div class="pt-4 border-t border-gray-700 text-center">
+                    <button id="back-to-lang-btn" class="px-3 py-1 text-xs rounded-full bg-purple-800 hover:bg-purple-700 border border-purple-600 transition-colors" data-lang="changeLanguage">Cambiar Idioma</button>
+                </div>
             </div>
         </div>
 
@@ -290,7 +293,7 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Config ---
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyCxK8U6dG82_p8J73Wc90jBlxMUZlbajVI",
   authDomain: "secretcode-d993d.firebaseapp.com",
   projectId: "secretcode-d993d",
@@ -332,6 +335,7 @@
                 createOnline: "Crear Juego Online",
                 joinOnline: "Unirse al Juego Online",
                 joinPlaceholder: "Pega el ID del Juego aquí",
+                changeLanguage: "Cambiar Idioma",
                 // Single Player Setup
                 singlePlayerTitle: "Modo Un Jugador",
                 timeLimitPrompt: "Selecciona el límite de tiempo para adivinar el código.",
@@ -399,6 +403,7 @@
                 createOnline: "Create Online Game",
                 joinOnline: "Join Online Game",
                 joinPlaceholder: "Paste Game ID here",
+                changeLanguage: "Change Language",
                 // Single Player Setup
                 singlePlayerTitle: "Single Player Mode",
                 timeLimitPrompt: "Select the time limit to guess the code.",
@@ -954,6 +959,7 @@
         document.getElementById('instructions-btn').addEventListener('click', () => instructionsModal.classList.remove('hidden'));
         document.getElementById('close-instructions-btn').addEventListener('click', () => instructionsModal.classList.add('hidden'));
         exitGameBtn.addEventListener('click', resetToLobby);
+        document.getElementById('back-to-lang-btn').addEventListener('click', () => showSection('language-section'));
         document.getElementById('copy-id-btn').addEventListener('click', () => {
             const textToCopy = document.getElementById('game-id-display').textContent;
             const textArea = document.createElement('textarea');
